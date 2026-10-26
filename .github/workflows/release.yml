@@ -29,7 +29,7 @@ jobs:
   # Run Release Please to create/update a release PR, then merge and tag.
   # Only runs when action is 'create-release'.
   release-please:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     if: ${{ github.event.inputs.action == 'create-release' }}
     outputs:
       release_created: ${{ steps.resolve.outputs.release_created }}
@@ -61,7 +61,7 @@ jobs:
           fi
 
   tag-contributors:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     needs: release-please
     if: >-
       always() &&
@@ -112,7 +112,7 @@ jobs:
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
             suffix: arm64
-    runs-on: ${{ matrix.runner }}
+    runs-on: "${{ (matrix.runner) == 'ubuntu-24.04-arm' && fromJSON('[\"self-hosted\",\"linux\",\"ARM64\"]') || (matrix.runner) }}"
     needs: [release-please]
     if: >-
       always() &&
@@ -174,7 +174,7 @@ jobs:
 
   # Merge per-platform images into a single multi-arch manifest.
   merge:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     needs: [release-please, build]
     if: ${{ always() && !cancelled() && needs.build.result == 'success' }}
     steps:
@@ -224,7 +224,7 @@ jobs:
 
   # Update version.json so dashboards can check for updates without GitHub API rate limits.
   update-version-json:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     needs: [release-please, merge]
     if: >-
       always() &&
